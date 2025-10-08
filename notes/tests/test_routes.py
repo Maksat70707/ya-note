@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from notes.models import Note
+
 User = get_user_model()
 
 
@@ -13,8 +14,8 @@ class TestRoutes(TestCase):
     @classmethod
     def setUpTestData(cls):
 
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.reader = User.objects.create(username='Читатель простой')
+        cls.author = User.objects.create(username='User A')
+        cls.reader = User.objects.create(username='User B')
 
         cls.note = Note.objects.create(
             title='Заголовок',
