@@ -4,33 +4,38 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from notes.models import Note
-from django.utils import timezone
 from notes.forms import NoteForm
 
 User = get_user_model()
 
 
-class TestHomePage(TestCase):
-    # Вынесем ссылку на домашнюю страницу в атрибуты класса.
+class TestList(TestCase):
     LIST_URL = reverse('notes:list')
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            text='Текст',
-            author=cls.author,
-            slug='cucucu'
-        )
+        cls.author = User.objects.create(username='Test User')
+        all_notes = [
+            Note(
+                title=f'Заметка {index}',
+                text='Просто текст.',
+                author=cls.author,
+                slug=f'cucucu{index}'
+            )
+            for index in range(5)
+        ]
+        Note.objects.bulk_create(all_notes)
+
+    def test_authorized_client_has_form(self):
+        self.client.force_login(self.author)
+        response = self.client.get(reverse('notes:add'))
+        self.assertIn('form', response.context)
+        self.assertIsInstance(response.context['form'], NoteForm)
 
     def test_notes_order(self):
+        self.client.force_login(self.author)
         response = self.client.get(self.LIST_URL)
         object_list = response.context['object_list']
-        # Получаем даты новостей в том порядке, как они выведены на странице.
-        all_dates = [notes.date for notes in object_list]
-        # Сортируем полученный список по убыванию.
-        sorted_dates = sorted(all_dates, reverse=True)
-        # Проверяем, что исходный список был отсортирован правильно.
-        self.assertEqual(all_dates, sorted_dates)
-
+        all_ids = [notes.id for notes in object_list]
+        sorted_ids = sorted(all_ids)
+        self.assertEqual(all_ids, sorted_ids)

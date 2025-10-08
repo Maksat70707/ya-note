@@ -5,7 +5,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from notes.models import Note
-from unittest import skip
 User = get_user_model()
 
 
@@ -36,7 +35,8 @@ class TestRoutes(TestCase):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_pages_redirection(self):
+    def test_availability_for_authenticated_users(self):
+        self.client.force_login(self.author)
         urls = (
             'notes:add',
             'notes:list',
@@ -46,7 +46,7 @@ class TestRoutes(TestCase):
             with self.subTest(name=name):
                 url = reverse(name)
                 response = self.client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_availability_for_note_edit_and_delete(self):
         users_statuses = (
