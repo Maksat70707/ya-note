@@ -26,13 +26,13 @@ class TestRoutes(TestCase):
 
     def test_pages_availability(self):
         urls = (
-            ('notes:home', None),
-            ('users:login', None),
-            ('users:signup', None),
+            'notes:home',
+            'users:login',
+            'users:signup',
         )
-        for name, args in urls:
+        for name in urls:
             with self.subTest(name=name):
-                url = reverse(name, args=args)
+                url = reverse(name)
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
@@ -48,6 +48,11 @@ class TestRoutes(TestCase):
                 url = reverse(name)
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
+                
+        logout_url = reverse('users:logout')
+        response = self.client.post(logout_url)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
 
     def test_availability_for_note_edit_and_delete(self):
         users_statuses = (
@@ -70,13 +75,17 @@ class TestRoutes(TestCase):
     def test_redirect_for_anonymous_client(self):
         login_url = reverse('users:login')
         urls = (
-            'notes:detail',
-            'notes:edit',
-            'notes:delete',
+            ('notes:add', None),
+            ('notes:list', None),
+            ('notes:success', None),
+            ('notes:detail', self.note.slug),
+            ('notes:edit', self.note.slug),
+            ('notes:delete', self.note.slug),
         )
-        for name in urls:
+        for name, slug in urls:
             with self.subTest(name=name):
-                url = reverse(name, kwargs={'slug': self.note.slug})
+                kwargs = {'slug': slug} if slug else {}
+                url = reverse(name, kwargs=kwargs)
                 redirect_url = f'{login_url}?next={url}'
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)
