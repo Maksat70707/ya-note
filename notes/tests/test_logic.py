@@ -1,11 +1,11 @@
-# news/tests/test_logic.py
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from pytils.translit import slugify
 
-from notes.forms import WARNING, NoteForm
+from notes.forms import WARNING
 from notes.models import Note
 
 User = get_user_model()
@@ -63,20 +63,18 @@ class TestNoteCreation(TestCase):
             'text': self.NOTE_TEXT,
             'slug': ''
         }
-        form = NoteForm(data=no_slug_data)
-        form.cleaned_data = {'slug': ''}
-        self.assertTrue(form.is_valid())
-        clean_slug = form.clean_slug()
 
         self.auth_client.post(self.url, data=no_slug_data)
         notes_count = Note.objects.count()
         self.assertEqual(notes_count, 1)
         note = Note.objects.get()
 
+        expected_slug = slugify(self.NOTE_TITLE)
+
         self.assertEqual(note.title, self.NOTE_TITLE)
         self.assertEqual(note.text, self.NOTE_TEXT)
         self.assertEqual(note.author, self.user)
-        self.assertEqual(note.slug, clean_slug)
+        self.assertEqual(note.slug, expected_slug)
 
 
 class TestNoteEditDelete(TestCase):

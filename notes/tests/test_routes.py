@@ -36,6 +36,11 @@ class TestRoutes(TestCase):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
+    def test_logout_available(self):
+        logout_url = reverse('users:logout')
+        logout_response = self.client.post(logout_url)
+        self.assertEqual(logout_response.status_code, HTTPStatus.OK)
+
     def test_availability_for_authenticated_users(self):
         self.client.force_login(self.author)
         urls = (
@@ -48,11 +53,10 @@ class TestRoutes(TestCase):
                 url = reverse(name)
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
-                
+
         logout_url = reverse('users:logout')
         response = self.client.post(logout_url)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-
 
     def test_availability_for_note_edit_and_delete(self):
         users_statuses = (
